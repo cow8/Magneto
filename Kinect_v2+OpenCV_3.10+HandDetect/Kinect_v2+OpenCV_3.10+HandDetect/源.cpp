@@ -3,37 +3,30 @@
 #include <string>
 #include <Kinect.h>
 using namespace cv;
-using   namespace   std;
+using namespace std;
+const string  get_name(int n);    //此函数判断出关节点的名字
+string ToGcode(int x, int y, int round);
+void iniKinect();
 
-const   string  get_name(int n);    //此函数判断出关节点的名字
+int myBodyCount = 0, height = 0, width = 0;
+
+IKinectSensor   * mySensor = nullptr;
+
+IBodyFrameSource    * myBodySource = nullptr;
+IBodyFrameReader    * myBodyReader = nullptr;
+
+IDepthFrameSource   * myDepthSource = nullptr;
+IDepthFrameReader   * myDepthReader = nullptr;
+
+IFrameDescription   * myDescription = nullptr;
+
+IBodyFrame  * myBodyFrame = nullptr;
+IDepthFrame * myDepthFrame = nullptr;
+
+Mat img16, img8;
 int main(void)
 {
-    IKinectSensor   * mySensor = nullptr;
-    GetDefaultKinectSensor(&mySensor);
-    mySensor->Open();
-
-    int myBodyCount = 0;
-    IBodyFrameSource    * myBodySource = nullptr;
-    IBodyFrameReader    * myBodyReader = nullptr;
-    mySensor->get_BodyFrameSource(&myBodySource);
-    myBodySource->OpenReader(&myBodyReader);
-    myBodySource->get_BodyCount(&myBodyCount);
-
-    IDepthFrameSource   * myDepthSource = nullptr;
-    IDepthFrameReader   * myDepthReader = nullptr;
-    mySensor->get_DepthFrameSource(&myDepthSource);
-    myDepthSource->OpenReader(&myDepthReader);
-
-    int height = 0, width = 0;
-    IFrameDescription   * myDescription = nullptr;;
-    myDepthSource->get_FrameDescription(&myDescription);
-    myDescription->get_Height(&height);
-    myDescription->get_Width(&width);   //以上为准备好深度数据和骨骼数据的Reader
-
-    IBodyFrame  * myBodyFrame = nullptr;
-    IDepthFrame * myDepthFrame = nullptr;
-    Mat img16(height, width, CV_16UC1); //为显示深度图像做准备
-    Mat img8(height, width, CV_8UC1);           
+	iniKinect();
 
     while (1)
     {
@@ -71,15 +64,15 @@ int main(void)
                     {
                         count++;
                         cout << "   " << rt << " tracked" << endl;
-                        if (rt == "Right thumb")
+                        if (rt == "Left hand")
                             cout << "       Right thumb at " << jointArr[j].Position.X << "," << jointArr[j].Position.Y << "," << jointArr[j].Position.Z << endl;
                     }
                 }
                 cout << count << " joints tracked" << endl << endl;
             }
         }
-        myDepthFrame->Release();
-        myBodyFrame->Release();
+        if(myDepthFrame!=nullptr)myDepthFrame->Release();
+		if (myBodyFrame!= nullptr)myBodyFrame->Release();
         delete[] bodyArr;
 
         if (waitKey(30) == VK_ESCAPE)
@@ -110,4 +103,33 @@ const   string  get_name(int n)
     case    24:return   "Right thumb"; break;
     default :return "NULL";
     }
+}
+
+string ToGcode(int x, int y, int round)
+{
+
+	return string();
+}
+
+void iniKinect()
+{
+	GetDefaultKinectSensor(&mySensor);
+	mySensor->Open();
+
+	mySensor->get_BodyFrameSource(&myBodySource);
+	myBodySource->OpenReader(&myBodyReader);
+	myBodySource->get_BodyCount(&myBodyCount);
+
+
+	mySensor->get_DepthFrameSource(&myDepthSource);
+	myDepthSource->OpenReader(&myDepthReader);
+
+
+	myDepthSource->get_FrameDescription(&myDescription);
+	myDescription->get_Height(&height);
+	myDescription->get_Width(&width);   //以上为准备好深度数据和骨骼数据的Reader
+
+
+	img16.create(height, width, CV_16UC1);//为显示深度图像做准备
+	img8.create(height, width, CV_8UC1);
 }
