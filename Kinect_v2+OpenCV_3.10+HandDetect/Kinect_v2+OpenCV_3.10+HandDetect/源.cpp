@@ -6,6 +6,7 @@ using namespace cv;
 using namespace std;
 const string  get_name(int n);    //此函数判断出关节点的名字
 string ToGcode(int x, int y, int round);
+void tructbar();
 void iniKinect();
 
 int myBodyCount = 0, height = 0, width = 0;
@@ -24,10 +25,15 @@ IBodyFrame  * myBodyFrame = nullptr;
 IDepthFrame * myDepthFrame = nullptr;
 
 Mat img16, img8;
+////////////////////////////////////
+typedef struct tructvar { int min, max;}tructvar;
+tructvar bodydepth;
+Point3d lefthand;
+Point arduino;
 int main(void)
 {
 	iniKinect();
-
+	tructbar();
     while (1)
     {
         while (myDepthReader->AcquireLatestFrame(&myDepthFrame) != S_OK);
@@ -52,7 +58,7 @@ int main(void)
             {
                 cout << "Body " << i << " tracked!" << endl;
 
-                int count = 0;
+                int count   = 0;
                 Joint   jointArr[JointType_Count];
                 bodyArr[i]->GetJoints(JointType_Count,jointArr);    //获取此人的关节数据
                 for (int j = 0; j < JointType_Count; j++)
@@ -64,11 +70,14 @@ int main(void)
                     {
                         count++;
                         cout << "   " << rt << " tracked" << endl;
-                        if (rt == "Left hand")
-                            cout << "       Right thumb at " << jointArr[j].Position.X << "," << jointArr[j].Position.Y << "," << jointArr[j].Position.Z << endl;
+						if (rt == "Left hand")
+						{
+							lefthand = Point3d((int)(jointArr[j].Position.X * 1000000), (int)(jointArr[j].Position.Y * 1000000), (int)(jointArr[j].Position.Z * 1000));
+							cout << "lefthand" << lefthand.x << "   " << lefthand.y << "   "<< lefthand.z<<endl;
+						}
+                           
                     }
                 }
-                cout << count << " joints tracked" << endl << endl;
             }
         }
         if(myDepthFrame!=nullptr)myDepthFrame->Release();
@@ -109,6 +118,13 @@ string ToGcode(int x, int y, int round)
 {
 
 	return string();
+}
+
+void tructbar()
+{
+	namedWindow("body",1);
+	createTrackbar("人最小距离", "body", &bodydepth.min, 5000);
+	createTrackbar("人最大距离", "body", &bodydepth.max, 5000);
 }
 
 void iniKinect()
