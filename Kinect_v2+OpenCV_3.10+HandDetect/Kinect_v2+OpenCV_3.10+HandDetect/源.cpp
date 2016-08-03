@@ -1,14 +1,21 @@
 #include <iostream>
 #include <opencv.hpp>
-#include <string>
+#include <cstring>
 #include <Kinect.h>
+#include <windows.h>
+#include "Serial.h"
+#include "Serial.cpp"
+#define NORMAL 0
+#define ZERO 1
+#define CENTER 2
+#define ROUND 3
+#define STOP 4
 using namespace cv;
 using namespace std;
 const string  get_name(int n);    //此函数判断出关节点的名字
-string ToGcode(int x, int y, int round);
+bool send(int ctl,int x, int y);
 void tructbar();
 void iniKinect();
-
 int myBodyCount = 0, height = 0, width = 0;
 
 IKinectSensor   * mySensor = nullptr;
@@ -30,10 +37,14 @@ typedef struct tructvar { int min, max;}tructvar;
 tructvar bodydepth;
 Point3d lefthand;
 Point arduino;
+CSerial serial;
 int main(void)
 {
+	
+	if(serial.OpenSerialPort(_T("COM2:"), 9600, 8, 1)==false) return -1;
 	iniKinect();
 	tructbar();
+	while(send(STOP, 0, 0)) Sleep(300);
     while (1)
     {
         while (myDepthReader->AcquireLatestFrame(&myDepthFrame) != S_OK);
@@ -114,10 +125,19 @@ const   string  get_name(int n)
     }
 }
 
-string ToGcode(int x, int y, int round)
+bool send(int ctl,int x, int y)
 {
-
-	return string();
+	char data[20]="";
+	data[0]= '#';
+	data[1]= ctl;
+	data[2]= (x / 256)+1;
+	data[3]= (x % 256)+1;
+	data[4]= (y / 256)+1;
+	data[5]= (y % 256)+1;
+	data[6]= '*';
+	data[7] = '*';
+	return serial.SendData(data, 8);
+	
 }
 
 void tructbar()
@@ -149,3 +169,4 @@ void iniKinect()
 	img16.create(height, width, CV_16UC1);//为显示深度图像做准备
 	img8.create(height, width, CV_8UC1);
 }
+

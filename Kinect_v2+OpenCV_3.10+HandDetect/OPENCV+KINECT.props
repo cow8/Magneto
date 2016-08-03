@@ -3,13 +3,13 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\OpenCV3.10\opencv\build\include\opencv2;C:\OpenCV3.10\opencv\build\include\opencv;C:\OpenCV3.10\opencv\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\OpenCV3.10\opencv\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\OpenCV3.00\build\include\opencv2;C:\OpenCV3.00\build\include\opencv;C:\OpenCV3.00\build\include\;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenCV3.00\build\x64\vc12\lib;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>OPENCV+KINECT+64</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <Link>
-      <AdditionalDependencies>opencv_world310.lib;opencv_world310d.lib;Kinect20.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world300.lib;opencv_world300d.lib;Kinect20.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(KINECTSDK20_DIR)\Lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
