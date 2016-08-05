@@ -59,10 +59,10 @@ int main()
 	//while(send(STOP, 0, 0)) Sleep(300);
     while (1)
     {
-        //while (myDepthReader->AcquireLatestFrame(&myDepthFrame) != S_OK);
-        //myDepthFrame->CopyFrameDataToArray(width * height,(UINT16 *)img16.data);
-        //img16.convertTo(img8,CV_8UC1,255.0 / 4500);
-        //imshow("Depth Img", img8);  //深度图像的转化及显示
+        while (myDepthReader->AcquireLatestFrame(&myDepthFrame) != S_OK);
+        myDepthFrame->CopyFrameDataToArray(width * height,(UINT16 *)img16.data);
+        img16.convertTo(img8,CV_8UC1,255.0 / 4500);
+        imshow("Depth Img", img8);  //深度图像的转化及显示
 		reflashcameradata();
 		if (is_setup == YES)
 		{
@@ -139,7 +139,7 @@ bool send(int ctl,int x, int y)
 	
 }
 
-void reflashcameradata()
+inline void reflashcameradata()
 {
 	while (myBodyReader->AcquireLatestFrame(&myBodyFrame) != S_OK);
 
