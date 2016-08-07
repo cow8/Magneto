@@ -150,10 +150,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="源.cpp" />
+    <ClInclude Include="Serial.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Serial.h" />
+    <ClCompile Include="源增量变化.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

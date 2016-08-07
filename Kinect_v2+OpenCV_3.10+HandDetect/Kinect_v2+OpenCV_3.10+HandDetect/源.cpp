@@ -5,7 +5,7 @@
 #include <windows.h>
 #include "Serial.h"
 #include "Serial.cpp"
-#define NORMAL 0
+#define NORMAL 9
 #define ZERO 1
 #define CENTER 2
 #define ROUND 3
@@ -46,57 +46,42 @@ HandState leftHandState, rightHandState;
 ////////////////////////////////////
 typedef struct tructvar { int min, max;}tructvar;
 tructvar bodydepth;
+IBody   * bodyArr[BODY_COUNT];
 Point3d lefthand,righthand;
 Point3d zerolefthand;
 CSerial serial;
+
 ///////////////////////////////////////
 int main()
 {
 	
-	//if(serial.OpenSerialPort(_T("COM2:"), 9600, 8, 1)==false) return -1;
+	if(serial.OpenSerialPort(_T("COM2:"), 9600, 8, 1)==false) return -1;
 	iniKinect();
 	tructbar();
-	//while(send(STOP, 0, 0)) Sleep(300);
+	
     while (1)
     {
         while (myDepthReader->AcquireLatestFrame(&myDepthFrame) != S_OK);
         myDepthFrame->CopyFrameDataToArray(width * height,(UINT16 *)img16.data);
         img16.convertTo(img8,CV_8UC1,255.0 / 4500);
         imshow("Depth Img", img8);  //深度图像的转化及显示
+		//
 		reflashcameradata();
-		if (is_setup == YES)
-		{
-			if (is_human == NO)
-			{
-				send(SLEEP, 0, 0);
-				is_setup = NO;
-			}
-			else
-			{
-				if(is_san()==YES)
-				{
-					send(ROUND, (lefthand.x - zerolefthand.x)*speed, (lefthand.y - zerolefthand.y)*speed);
-				}
-				else send(NORMAL, (lefthand.x - zerolefthand.x)*speed, (lefthand.y - zerolefthand.y)*speed);
-			}
-		}
-		else
-		{
-			if (is_human == YES)
-			{
-				if (rightHandState == HandState_Closed && leftHandState == HandState_Closed)
-				{
-					send(CENTER, 0, 0);
-					zerolefthand = lefthand;
-					is_setup = YES;
-				}
-			}
-		}
 		
-        
+		if (rightHandState == HandState_Open && leftHandState == HandState_Open)
+		{
+			send(CENTER, 0, 0),cout<<"CENTER";
+		}
+
+		if(rightHandState==HandState_Closed)
+			send(ROUND, (int)(lefthand.x*speed), (int)(lefthand.y*speed)), cout << "ROUND  "<< (int)(lefthand.x*speed)<<"  "<< (int)(lefthand.y*speed)<<endl;
+		else
+			send(NORMAL, (int)(lefthand.x*speed), (int)(lefthand.y*speed)), cout << "NORMAL " << (int)(lefthand.x*speed) << "  " << (int)(lefthand.y*speed) << endl;
+		
         if (waitKey(30) == VK_ESCAPE)
             break;
         //Sleep(1000);    //为避免数据刷太快，每秒钟更新一次
+		
     }
     myBodyReader->Release();
     myDepthReader->Release();
@@ -134,35 +119,28 @@ bool send(int ctl,int x, int y)
 	data[4]= (y / 256)+1;
 	data[5]= (y % 256)+1;
 	data[6]= '*';
-	data[7] = '*';
-	return serial.SendData(data, 8);
+	data[7] = 0;
+	return serial.SendData(data, strlen(data));
 	
 }
 
-inline void reflashcameradata()
+void reflashcameradata()
 {
 	while (myBodyReader->AcquireLatestFrame(&myBodyFrame) != S_OK);
-
-	//int myBodyCount = 0;        
-	//IBody   ** bodyArr = nullptr;
-	//myBodySource->get_BodyCount(&myBodyCount);
-	//bodyArr = new IBody *[myBodyCount];
-	//for (int i = 0; i < myBodyCount; i++)   //bodyArr的初始化
-	//   bodyArr[i] = nullptr;       
-	IBody   * bodyArr[BODY_COUNT] = { 0 };
-
+	
+	//bodyArr[BODY_COUNT] = { 0 };
 	myBodyFrame->GetAndRefreshBodyData(BODY_COUNT, bodyArr);
 	for (int i = 0; i < BODY_COUNT; i++)   //遍历6个人(可能用不完)
 	{
 		BOOLEAN     result = false;
 		if (bodyArr[i]->get_IsTracked(&result) == S_OK && result)   //判断此人是否被侦测到
 		{
-			cout << "Body " << i << " tracked!" << endl;
+			//cout << "Body " << i << " tracked!" << endl;
 			Joint   jointArr[JointType_Count];
 			bodyArr[i]->GetJoints(JointType_Count, jointArr);    //获取此人的关节数据
 
 																 //判断距离合法否
-			if (!(jointArr[0].Position.Z <= bodydepth.max &&jointArr[0].Position.Z >= bodydepth.min)) continue;
+			if (!(jointArr[0].Position.Z*100 <= bodydepth.max &&jointArr[0].Position.Z*100 >= bodydepth.min)) continue;
 
 			leftHandState = HandState_Unknown;
 			bodyArr[i]->get_HandLeftState(&leftHandState);
@@ -178,11 +156,11 @@ inline void reflashcameradata()
 				if (rt != "NULL")   //输出关节信息
 				{
 
-					cout << "   " << rt << " tracked" << endl;
+					//cout << "   " << rt << " tracked" << endl;
 					if (rt == "Left hand")
 					{
-						lefthand = Point3d((int)(jointArr[j].Position.X * 1000000), (int)(jointArr[j].Position.Y * 1000000), (int)(jointArr[j].Position.Z * 1000));
-						cout << "lefthand" << lefthand.x << "   " << lefthand.y << "   " << lefthand.z << endl;
+						lefthand = Point3d(jointArr[j].Position.X, jointArr[j].Position.Y ,jointArr[j].Position.Z);
+						//cout << "lefthand" << lefthand.x << "   " << lefthand.y << "   " << lefthand.z << endl;
 					}
 
 				}
@@ -191,7 +169,7 @@ inline void reflashcameradata()
 	}
 	if (myDepthFrame != nullptr)myDepthFrame->Release();
 	if (myBodyFrame != nullptr)myBodyFrame->Release();
-
+	
 }
 
 void tructbar()
@@ -199,6 +177,7 @@ void tructbar()
 	namedWindow("body",1);
 	createTrackbar("人最小距离", "body", &bodydepth.min, 5000);
 	createTrackbar("人最大距离", "body", &bodydepth.max, 5000);
+	createTrackbar("speed", "body", &speed, 5000);
 }
 
 void iniKinect()
@@ -221,11 +200,6 @@ void iniKinect()
 
 	img16.create(height, width, CV_16UC1);//为显示深度图像做准备
 	img8.create(height, width, CV_8UC1);
-}
-
-void mode_setup()
-{
-	
 }
 
 
