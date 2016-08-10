@@ -126,7 +126,7 @@ BOOL CSerial::OpenSerialPort(TCHAR* port, UINT baud_rate, BYTE date_bits, BYTE s
 /********************************************************************************************
 * 功能    ：	通过串口发送一条数据
 ********************************************************************************************/
-BOOL CSerial::SendData(char* data, int len) {
+BOOL CSerial::SendData(unsigned char* data, int len) {
 	if (m_hComm == INVALID_HANDLE_VALUE) {
 		MessageBox(NULL, _T("串口未打开"), _T("提示"), MB_OK);
 		return FALSE;

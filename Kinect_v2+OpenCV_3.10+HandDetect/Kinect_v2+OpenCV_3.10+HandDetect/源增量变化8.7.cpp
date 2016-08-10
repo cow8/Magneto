@@ -20,11 +20,9 @@ bool send(int ctl, int x, int y);
 void reflashdata();
 void tructbar();
 void iniKinect();
-int is_san();
 int height = 0, width = 0;
-int speed = 50000,yuzhi=3;
+int speed = 40000,yuzhi=3;
 int is_tracking = NO;
-int is_setup = NO;
 IKinectSensor   * mySensor = nullptr;
 
 IBodyFrameSource    * myBodySource = nullptr;
@@ -42,7 +40,7 @@ Mat img16, img8;
 HandState leftHandState, rightHandState;
 ////////////////////////////////////
 typedef struct tructvar { int min, max; }tructvar;
-tructvar bodydepth = { 100,150 }, deta = {2,2000};
+tructvar bodydepth = { 200,250 }, deta = {500,5000};
 IBody   * bodyArr[BODY_COUNT];
 Point3d lefthand[2], righthand[2], nohand = { 100,100,100 };
 Point arduino;
@@ -52,7 +50,7 @@ int tracked;
 int main()
 {
 	lefthand[0] = lefthand[1] = nohand;
-	if (serial.OpenSerialPort(_T("COM2:"), 9600, 8, 1) == false) return -1;
+	if (serial.OpenSerialPort(_T("COM4:"), 9600, 8, 1) == false) return -1;
 	iniKinect();
 	tructbar();
 
@@ -66,14 +64,16 @@ int main()
 			reflashdata();
 			cout << "waiting~~~" << endl;
 			send(SLEEP, 0, 0);
+			waitKey(1);
 		}
 		cout << "ok"<<endl;
 		send(CENTER, 0, 0);
-		arduino = Point(19500/2, 28100/2);
+		arduino = Point(18000/2, 27000/2);
 		reflashdata();
 
 		while (is_tracking)
 		{
+			waitKey(1);
 			int detax=0, detay=0;
 			detax+= (lefthand[0].x - lefthand[1].x)*speed;
 			detay+= (lefthand[0].y - lefthand[1].y)*speed;
@@ -85,8 +85,8 @@ int main()
 			arduino.y += detay;
 			if (arduino.x < 0) arduino.x = 0;
 			if (arduino.y < 0) arduino.y = 0;
-			if (arduino.x >19500) arduino.x = 19500;
-			if (arduino.y >28100) arduino.y = 28100;
+			if (arduino.x >18000) arduino.x = 18000;
+			if (arduino.y >27000) arduino.y = 27000;
 			cout << arduino;
 			if ((righthand[0].z - righthand[1].z < -0.05 && rightHandState!=HandState_Open)|| (lefthand[0].z - lefthand[1].z < -0.05 && leftHandState != HandState_Open))
 				send(ROUND, arduino.x, arduino.y),cout<<"     ROUND"<<endl;
@@ -131,8 +131,8 @@ const   string  get_name(int n)
 
 bool send(int ctl, int x, int y)
 {
-	//Sleep(1000);
-	char data[20] = "";
+	//Sleep(50);
+	unsigned char data[20] = "";
 	data[0] = '#';
 	data[1] = ctl;
 	data[2] = x / 256;
@@ -217,9 +217,9 @@ void tructbar()
 	namedWindow("body", 1);
 	createTrackbar("人最小距离", "body", &bodydepth.min, 5000);
 	createTrackbar("人最大距离", "body", &bodydepth.max, 5000);
-	createTrackbar("deta.min", "body", &deta.min, 50);
-	createTrackbar("deta.max", "body", &deta.max, 500);
-	createTrackbar("speed", "body", &speed, 5000);
+	createTrackbar("deta.min", "body", &deta.min, 5000);
+	createTrackbar("deta.max", "body", &deta.max, 5000);
+	createTrackbar("speed", "body", &speed, 50000);
 }
 
 void iniKinect()

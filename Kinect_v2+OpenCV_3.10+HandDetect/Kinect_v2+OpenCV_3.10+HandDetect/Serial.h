@@ -11,7 +11,7 @@ public:
 	BOOL OpenSerialPort(TCHAR* port, UINT baud_rate, BYTE date_bits, BYTE stop_bit, BYTE parity = NOPARITY);
 
 	//·¢ËÍÊý¾Ý
-	BOOL SendData(char* data, int len);
+	BOOL SendData(unsigned char* data, int len);
 public:
 	HANDLE m_hComm;
 };
