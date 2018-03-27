@@ -3,8 +3,8 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>C:\OpenCV3.10\opencv\build\include\opencv2;C:\OpenCV3.10\opencv\build\include\opencv;C:\OpenCV3.10\opencv\build\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\OpenCV3.10\opencv\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\OpenCV\OpenCV3.10\build\include\opencv2;C:\OpenCV\OpenCV3.10\build\include\opencv;C:\OpenCV\OpenCV3.10\build\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenCV\OpenCV3.10\build\x64\vc14\lib;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>OPENCV+KINECT+64</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>
